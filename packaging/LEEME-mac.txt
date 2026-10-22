@@ -1,0 +1,21 @@
+BARULLO LEY para Mac (Apple Silicon e Intel, macOS 11 ou posterior)
+Unha ferramenta de Escoita · https://www.escoita.link
+
+O máis doado: abre o instalador BarulloLey-…-mac.pkg. Instala:
+  - VST3:  /Library/Audio/Plug-Ins/VST3/Barullo Ley.vst3
+  - AU:    /Library/Audio/Plug-Ins/Components/Barullo Ley.component
+  - CLAP:  /Library/Audio/Plug-Ins/CLAP/Barullo Ley.clap
+  - App:   /Applications/Barullo Ley.app
+
+Se macOS di que non pode comprobar o desenvolvedor:
+  clic dereito sobre o instalador → Abrir → Abrir.
+  (Ou en Axustes do Sistema → Privacidade e seguranza → «Abrir igualmente».)
+
+Á man, con este .zip: copia cada ficheiro no cartafol de arriba que lle toca e,
+no Terminal, quítalle a marca de «descargado de internet»:
+  xattr -cr "/Library/Audio/Plug-Ins/VST3/Barullo Ley.vst3"
+  xattr -cr "/Library/Audio/Plug-Ins/Components/Barullo Ley.component"
+  xattr -cr "/Library/Audio/Plug-Ins/CLAP/Barullo Ley.clap"
+  xattr -cr "/Applications/Barullo Ley.app"
+
+Despois, volve abrir o DAW e busca «Barullo Ley» entre os efectos.
