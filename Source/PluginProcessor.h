@@ -65,6 +65,7 @@ private:
 
     ley::Eco eco;
     escoita::Teito teito;
+    escoita::Atraso atrasoL, atrasoR;   // o bypass, á par do teito (a súa anticipación)
     std::atomic<double> bpm { 120.0 };
     double sr = 48000, mestS = 0, volS = 1, bypassS = 0;
     std::atomic<float> *tipo = nullptr, *sincronia = nullptr, *nota = nullptr, *ms = nullptr, *repeticions = nullptr, *ton = nullptr,

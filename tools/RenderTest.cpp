@@ -35,23 +35,27 @@ struct Cabeza : juce::AudioPlayHead
     juce::Optional<PositionInfo> getPosition() const override { PositionInfo p; p.setBpm (bpm); return p; }
 };
 
-// pasa un son polo plugin en bloques (o son pode ser máis curto: despois, silencio)
+// pasa un son polo plugin en bloques (o son pode ser máis curto: despois, silencio). A saída vén á par
+// da entrada, coma no DAW: sen as primeiras mostras da latencia (a anticipación do teito)
 static juce::AudioBuffer<float> procesar (BLProcessor& p, const juce::AudioBuffer<float>& in, double len, int blockSize, double sr, bool preparar = true)
 {
     if (preparar) { p.setPlayConfigDetails (2, 2, sr, blockSize); p.prepareToPlay (sr, blockSize); }
-    const int total = (int) (len * sr);
+    const int total = (int) (len * sr), lat = p.getLatencySamples();
     juce::AudioBuffer<float> out (2, total), buf (2, blockSize);
+    out.clear();
     juce::MidiBuffer midi;
-    for (int pos = 0; pos < total; pos += blockSize)
+    for (int pos = 0; pos < total + lat; pos += blockSize)
     {
-        const int n = juce::jmin (blockSize, total - pos);
+        const int n = juce::jmin (blockSize, total + lat - pos);
         buf.setSize (2, n, false, false, true);
         buf.clear();
         for (int c = 0; c < 2; ++c)
             for (int i = 0; i < n; ++i)
                 if (pos + i < in.getNumSamples()) buf.setSample (c, i, in.getSample (c % in.getNumChannels(), pos + i));
         p.processBlock (buf, midi);
-        for (int c = 0; c < 2; ++c) out.copyFrom (c, pos, buf, c, 0, n);
+        for (int c = 0; c < 2; ++c)
+            for (int i = 0; i < n; ++i)
+                if (pos + i >= lat && pos + i - lat < total) out.setSample (c, pos + i - lat, buf.getSample (c, i));
     }
     return out;
 }
@@ -504,14 +508,14 @@ int main (int argc, char** argv)
         const double c16 = p.getTailLengthSeconds();
         check (prog && c0 > 1.0 && c0 < 5.0 && c16 > 20.0 && c16 <= 30.0, "programas do DAW = presets e a cola", juce::String::formatted ("(%.1f s, %.1f s)", c0, c16));
     }
-    {   // o limitador do núcleo: un son forte, cos ecos altos e a +6 dB, non pasa de −1 dBFS; latencia 0
+    {   // o limitador do núcleo: un son forte, cos ecos altos e a +6 dB, non pasa de −1 dBFS; a latencia é a anticipación (1,5 ms)
         BLProcessor p;
         p.cargarPreset (10);
         setParam (p, "mestura", 60.0f); setParam (p, "volume", 6.0f);
         auto son = sonDeProba (sr);
         son.applyGain (3.0f);
         const float pk = pico (procesar (p, son, 3.0, 512, sr));
-        check (pk <= 0.8913f && p.getLatencySamples() == 0, "teito a -1 dBFS e sen latencia", juce::String::formatted ("(pico %.4f)", pk));
+        check (pk <= 0.8913f && p.getLatencySamples() == 72, "teito a -1 dBFS, con 1,5 ms de anticipación", juce::String::formatted ("(pico %.4f; latencia %d)", pk, p.getLatencySamples()));
     }
     return fails;
 }

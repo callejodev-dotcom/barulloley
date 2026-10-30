@@ -151,10 +151,12 @@ bool BLProcessor::isBusesLayoutSupported (const BusesLayout& l) const
 void BLProcessor::prepareToPlay (double sampleRate, int)
 {
     sr = sampleRate;
-    setLatencySamples (0);
     eco.preparar (sampleRate);
     eco.axustar (axustes());
-    teito.preparar (sampleRate, 0.080, 0.891);
+    // o teito mira 1,5 ms por diante (baixa suave antes do pico): esa é a latencia, e o bypass vai igual de atrasado
+    teito.preparar (sampleRate, 0.080, 0.891, 0.0015);
+    atrasoL.preparar (teito.latencia()); atrasoR.preparar (teito.latencia());
+    setLatencySamples (teito.latencia());
     mestS = mestura->load() / 100.0;
     volS = ganancia (volume->load());
     bypassS = bypass->load() > 0.5f ? 1.0 : 0.0;
@@ -189,8 +191,9 @@ void BLProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuff
         double l = (dl * gs + wl * gm) * volS, r = (dr * gs + wr * gm) * volS;
         if (R != nullptr) teito.procesar (l, r);
         else l = r = teito.procesar (0.5 * (l + r));
-        // o bypass deixa pasar o son tal cal (sen o teito); os ecos seguen a soar por dentro
-        l = l * (1.0 - bypassS) + dl * bypassS; r = r * (1.0 - bypassS) + dr * bypassS;
+        // o bypass deixa pasar o son tal cal (sen o teito, co seu atraso); os ecos seguen a soar por dentro
+        const double al = atrasoL.procesar (dl), ar = atrasoR.procesar (dr);
+        l = l * (1.0 - bypassS) + al * bypassS; r = r * (1.0 - bypassS) + ar * bypassS;
         L[i] = (float) l;
         if (R != nullptr) R[i] = (float) r;
         pe = std::max ({ pe, (float) std::abs (dl), (float) std::abs (dr) });

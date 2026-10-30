@@ -36,7 +36,7 @@ Avisan porque os instaladores non levan sinatura de pago, non porque haxa nada r
 - **Presets propios, A/B e desfacer** (do núcleo común): os presets van en `.blpreset`, en Documentos/Barullo Ley/Presets. Cada clic é un paso de desfacer.
 - **Bypass** de verdade: o son pasa tal cal e os ecos seguen a soar por dentro.
 - Un **limitador de seguridade** á saída: nunca pasa de −1 dBFS.
-- Entrada mono ou estéreo; sen latencia.
+- Entrada mono ou estéreo. O limitador mira 1,5 ms por diante (baixa suave antes do pico, sen esmagalo): esa é a latencia, e o DAW compénsaa só.
 
 ## Como se fixo
 
@@ -65,7 +65,7 @@ entrada ─┬─────────────── (conxelado: non entr
 | `Source/PluginEditor.*` | A interface |
 | `tools/RenderTest.cpp` | A proba |
 
-Usa o núcleo común de Escoita ([escoita-nucleo](https://github.com/callejodev-dotcom/escoita-nucleo), v0.3.0): o texto en galego, o aviso das versións novas, os presets propios, o A/B e o desfacer (`escoita::Estado`), o limitador de seguridade (`escoita::Teito`), a CI e os instaladores.
+Usa o núcleo común de Escoita ([escoita-nucleo](https://github.com/callejodev-dotcom/escoita-nucleo), v0.5.0): o texto en galego, o aviso das versións novas, os presets propios, o A/B e o desfacer (`escoita::Estado`), o limitador de seguridade con anticipación (`escoita::Teito`, `escoita::Atraso`), a CI e os instaladores.
 
 ## Probas
 
